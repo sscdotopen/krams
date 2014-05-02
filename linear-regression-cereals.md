@@ -98,6 +98,8 @@ val Xty = drmXty.collect(::, 0)
 val beta = solve(XtX, Xty)
 ```
 
+That's it! We have a implemented a distributed linear regression algorithm on Apache Spark. I hope you agree that we didn't have to worry a lot about parallelization and distributed systems. The goal of Mahout's linear algebra DSL is to abstract away the ugliness of programming a distributed system as much as possible, while still retaining decent performance and scalability.
+
 *Xβ_hat*
 ```
 val yFitted = (drmX %*% betaHat).collect(::, 0)
