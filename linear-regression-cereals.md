@@ -1,4 +1,3 @@
-
 # Distributed Linear Regression with Mahout's Spark Shell
 
 ## Intro
@@ -36,7 +35,8 @@ We describe how to do a quick toy setup of Spark & Mahout on your local machine,
 ```
 export MAHOUT_HOME=<directory where you checked out Mahout>
 export SPARK_HOME=<directory where you unpacked Spark>
-export MASTER=<url of the Spark master>```
+export MASTER=<url of the Spark master>
+```
  1. Finally, change to the directory where you unpacked Mahout and type ```bin/mahout spark-shell```
 
 ## Implementation
