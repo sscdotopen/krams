@@ -70,28 +70,32 @@ As a first step, we extract *X* and *y* from our data matrix. We get *X* by slic
 val drmX = drmData(::, 0 until 4)
 ```
 
+Next, we extract the target variable vector *y*, the fifth column of the data matrix. We assume this one fits into our driver machine, so we fetch it in-core using ```collect```:
+
 ```
 val y = drmData.collect(::, 4)
 ```
 
-*β_hat = (X<sup>T</sup>X)<sup>-1</sup> X<sup>T</sup>y*
+Now we are ready to think about a mathematical way to estimate the parameter vector *β*. A simple textbook approach is [ordinary least squares (OLS)](https://en.wikipedia.org/wiki/Ordinary_least_squares), which minimizes the sum of residual squares. In OLS, there is even a closed form expression for estimating *ß* as ***(X<sup>T</sup>X)<sup>-1</sup> X<sup>T</sup>y***.
 
-X<sup>T</sup>X
+The first thing which we compute for this is ***X<sup>T</sup>X***. The code for doing this in Mahout's scala DSL maps directly to the mathematical formula. The operation ```.t()``` transposes a matrix and analogous to R ```%*%``` denotes matrix multiplication.
 
 ```
 val drmXtX = drmX.t %*% drmX
 ```
 
-X<sup>T</sup>y
+The same is true for computing ***X<sup>T</sup>y***. We can simply type the math in scala expressions into the shell. Here, *X* lives in the cluster, while is *y* in the memory of the driver, and the result is a DRM again.
 ```
 val drmXty = drmX.t %*% y
 ```
+
+We're nearly done. The next step we take is to fetch *X<sup>T</sup>X* and *X<sup>T</sup>y* into the memory of our driver machine (assuming that *X<sup>T</sup>X* is small enough to fit in). Then, we provide them to an in-core solver (Mahout provides the an analogon to R's ```solve()``` for that) which computes ```beta```, our OLS estimate of the parameter vector *β*.
 
 ```
 val XtX = drmXtX.collect
 val Xty = drmXty.collect(::, 0)
 
-val betaHat = solve(XtX, Xty)
+val beta = solve(XtX, Xty)
 ```
 
 *Xβ_hat*
