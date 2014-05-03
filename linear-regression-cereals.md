@@ -111,13 +111,15 @@ val yFitted = (drmX %*% beta).collect(::, 0)
 
 We hope that we could show that Mahout's shell allows people to interactively and incrementally write algorithms. We have entered a lot of individual commands, one-by-one, until we got the desired results. We can now refactor a little by wrapping our statements into easy-to-use functions. The definition of functions follows standard scala syntax. 
 
-We put all the commands for ordinary least squares into a function ```ols```:
+We put all the commands for ordinary least squares into a function ```ols```. 
 
 ```
 import org.apache.mahout.math.Vector
-def ols(drmX: DrmLike[_], y: Vector) = {
+def ols(drmX: DrmLike[Int], y: Vector) = {
+
   val XtX = (drmX.t %*% drmX).collect
   val Xty = (drmX.t %*% y).collect(::, 0)
+
   solve(XtX, Xty)
 }
 ```
@@ -154,5 +156,20 @@ Now we can give the newly created DRM ```drmXwithBiasColumn``` to our model fitt
 val betaWithBiasTerm = ols(drmXwithBiasColumn, y)
 goodnessOfFit(drmXwithBiasColumn, betaWithBiasTerm, y)
 ```
+
+As a further optimization, we can make use of the DSL's caching functionality. We use ```drmXwithBiasColumn``` repeatedly  as input to a computation, so it might be beneficial to cache it in memory. This is achieved by calling ```checkpoint()```. In the end, we remove it from the cache with uncache:
+
+
+```
+val cachedDrmX = drmXwithBiasColumn.checkpoint()
+
+val betaWithBiasTerm = ols(cachedDrmX, y)
+val goodness = goodnessOfFit(cachedDrmX, betaWithBiasTerm, y)
+
+cachedDrmX.uncache()
+
+goodness
+```
+
 
 Liked what you saw? Checkout Mahout's overview for the [Scala and Spark bindings](https://mahout.apache.org/users/sparkbindings/home.html).
